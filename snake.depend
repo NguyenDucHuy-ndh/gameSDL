@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1740489077 source:e:\university\2024-2025\hk2\ltnc\btl\snake\main.cpp
+	<SDL.h>
+	<iostream>
+	<vector>
+	<ctime>
+	<cstdlib>
+
