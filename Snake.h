@@ -14,7 +14,7 @@ struct SnakeSegment {
 
 class Snake {
 private:
-    vector<SnakeSegment> segments;
+    std::vector<SnakeSegment> segments;
     Direction direction;
     SDL_Texture* headTexture;
     SDL_Texture* bodyTexture;
@@ -34,9 +34,9 @@ public:
 
     Direction getDirection() const {return direction;}
     SnakeSegment getHead() const {return segments.front();}
-    vector<SnakeSegment>& getSegments() {return segments;}
+    std::vector<SnakeSegment>& getSegments() {return segments;}
 
-    bool checkSelfCollision();
+    bool checkSelfCollision() const;
 };
 
 #endif // SNAKE_H

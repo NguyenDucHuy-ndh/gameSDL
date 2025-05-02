@@ -5,6 +5,8 @@
 #include <vector>
 #include "Snake.h"
 
+using namespace std;
+
 class Food {
 private:
     SDL_Point position;
@@ -15,7 +17,7 @@ private:
     int screenHeight;
 
 public:
-    Food(SDL_Renderer* renderer, int gridSize, int screenWidth, screenHeight);
+    Food(SDL_Renderer* renderer, int gridSize, int screenWidth, int screenHeight);
     ~Food();
 
     bool loadTexture();

@@ -1,8 +1,42 @@
 # depslib dependency file v1.0
-1740489077 source:e:\university\2024-2025\hk2\ltnc\btl\snake\main.cpp
+1741761282 source:e:\university\2024-2025\hk2\ltnc\btl\snake\main.cpp
 	<SDL.h>
-	<iostream>
+	"Game.h"
+
+1741764389 e:\university\2024-2025\hk2\ltnc\btl\snake\game.h
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
 	<vector>
-	<ctime>
+	<string>
+	"Snake.h"
+	"Food.h"
+
+1741764709 e:\university\2024-2025\hk2\ltnc\btl\snake\snake.h
+	<SDL.h>
+	<vector>
+
+1741763797 e:\university\2024-2025\hk2\ltnc\btl\snake\food.h
+	<SDL.h>
+	<vector>
+	"Snake.h"
+
+1741773237 source:e:\university\2024-2025\hk2\ltnc\btl\snake\food.cpp
+	"Food.h"
+	<iostream>
 	<cstdlib>
+	<ctime>
+	<SDL_image.h>
+	<SDL.h>
+
+1741763635 source:e:\university\2024-2025\hk2\ltnc\btl\snake\game.cpp
+	"Game.h"
+	<iostream>
+	<sstream>
+	<SDL_ttf.h>
+
+1741764672 source:e:\university\2024-2025\hk2\ltnc\btl\snake\snake.cpp
+	"Snake.h"
+	<iostream>
+	<SDL_image.h>
 
