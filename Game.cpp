@@ -7,7 +7,7 @@ Game::Game()
     : window(nullptr), renderer(nullptr), backgroundTexture(nullptr),
       eatSound(nullptr), crashSound(nullptr),
       snake(nullptr, GRID_SIZE), food(nullptr, GRID_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT),
-      running(false), score(0), highScore(0),
+      menu(nullptr), gameState(MENU_STATE), running(false), score(0), highScore(0),
       lastUpdateTime(0), gameSpeed(150), speedIncrement(5),
       scoreTexture(nullptr) {
 }
@@ -87,9 +87,16 @@ bool Game::init() {
     // Truyền renderer vào đối tượng rắn và thức ăn
     snake = Snake(renderer, GRID_SIZE);
     food = Food(renderer, GRID_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT);
+    menu = Menu(renderer);
 
     // Tải các tài nguyên
     if (!loadMedia()) {
+        return false;
+    }
+
+    // Khởi tạo menu
+    if (!menu.init()) {
+        std::cerr << "Không thể khởi tạo menu!" << std::endl;
         return false;
     }
 
@@ -100,6 +107,11 @@ bool Game::init() {
     running = true;
     score = 0;
     updateScore();
+
+    // Bắt đầu với màn hình menu
+    gameState = MENU_STATE;
+    menu.setState(MENU_STATE);
+    menu.createMainMenu();
 
     return true;
 }
@@ -151,32 +163,54 @@ void Game::handleEvents() {
         if (e.type == SDL_QUIT) {
             running = false;
         }
-        else if (e.type == SDL_KEYDOWN) {
-            switch (e.key.keysym.sym) {
-                case SDLK_UP:
-                    snake.setDirection(UP);
-                    break;
-                case SDLK_DOWN:
-                    snake.setDirection(DOWN);
-                    break;
-                case SDLK_LEFT:
-                    snake.setDirection(LEFT);
-                    break;
-                case SDLK_RIGHT:
-                    snake.setDirection(RIGHT);
-                    break;
-                case SDLK_ESCAPE:
-                    running = false;
-                    break;
-                case SDLK_r:
-                    reset();
-                    break;
+
+        // Handle events based on game state
+        if (gameState == MENU_STATE || gameState == PAUSE_STATE || gameState == GAME_OVER_STATE) {
+            // Let menu handle events
+            menu.handleEvents(e, gameState);
+
+            // Check if menu wants to restart the game
+            if (gameState == GAME_STATE && menu.getCurrentState() != GAME_STATE) {
+                reset();
+            }
+        }
+        else if (gameState == GAME_STATE) {
+            // In-game controls
+            if (e.type == SDL_KEYDOWN) {
+                switch (e.key.keysym.sym) {
+                    case SDLK_UP:
+                        snake.setDirection(UP);
+                        break;
+                    case SDLK_DOWN:
+                        snake.setDirection(DOWN);
+                        break;
+                    case SDLK_LEFT:
+                        snake.setDirection(LEFT);
+                        break;
+                    case SDLK_RIGHT:
+                        snake.setDirection(RIGHT);
+                        break;
+                    case SDLK_ESCAPE:
+                        // Pause the game
+                        gameState = PAUSE_STATE;
+                        menu.setState(PAUSE_STATE);
+                        menu.createPauseMenu();
+                        break;
+                    case SDLK_r:
+                        reset();
+                        break;
+                }
             }
         }
     }
 }
 
 void Game::update() {
+    // Only update the game if in GAME_STATE
+    if (gameState != GAME_STATE) {
+        return;
+    }
+
     Uint32 currentTime = SDL_GetTicks();
     if (currentTime - lastUpdateTime < gameSpeed) {
         return; // Chưa đến thời gian cập nhật
@@ -201,7 +235,11 @@ void Game::checkCollision() {
         if (score > highScore) {
             highScore = score;
         }
-        reset();
+
+        // Show game over menu
+        gameState = GAME_OVER_STATE;
+        menu.setState(GAME_OVER_STATE);
+        menu.createGameOverMenu(score, highScore);
         return;
     }
 
@@ -212,7 +250,11 @@ void Game::checkCollision() {
         if (score > highScore) {
             highScore = score;
         }
-        reset();
+
+        // Show game over menu
+        gameState = GAME_OVER_STATE;
+        menu.setState(GAME_OVER_STATE);
+        menu.createGameOverMenu(score, highScore);
         return;
     }
 
@@ -233,68 +275,71 @@ void Game::checkCollision() {
     }
 }
 
-void Game::updateScore() {
-    // Cập nhật texture hiển thị điểm
-    TTF_Font* font = TTF_OpenFont("assets/font.ttf", 24);
-    if (!font) {
-        std::cerr << "Không thể tải font! SDL_ttf Error: " << TTF_GetError() << std::endl;
-        return;
+void Game::run() {
+    // Main game loop
+    while (running) {
+        handleEvents();
+        update();
+        render();
+        SDL_Delay(16); // Cap frame rate at approximately 60 FPS
     }
-
-    // Tạo text điểm số
-    std::stringstream scoreText;
-    scoreText << "Score: " << score << "  High Score: " << highScore;
-
-    SDL_Color textColor = {255, 255, 255, 255};
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, scoreText.str().c_str(), textColor);
-
-    if (!textSurface) {
-        std::cerr << "Không thể render text! SDL_ttf Error: " << TTF_GetError() << std::endl;
-        TTF_CloseFont(font);
-        return;
-    }
-
-    // Tạo texture từ surface
-    if (scoreTexture) {
-        SDL_DestroyTexture(scoreTexture);
-    }
-
-    scoreTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-
-    if (!scoreTexture) {
-        std::cerr << "Không thể tạo texture từ text! SDL_Error: " << SDL_GetError() << std::endl;
-    }
-
-    // Lưu kích thước rect để render
-    scoreRect.x = 10;
-    scoreRect.y = 10;
-    scoreRect.w = textSurface->w;
-    scoreRect.h = textSurface->h;
-
-    // Giải phóng bộ nhớ
-    SDL_FreeSurface(textSurface);
-    TTF_CloseFont(font);
 }
 
 void Game::render() {
-    // Xóa màn hình
+    // Clear the screen
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    // Vẽ nền
-    SDL_RenderCopy(renderer, backgroundTexture, nullptr, nullptr);
+    // Render background
+    if (backgroundTexture) {
+        SDL_RenderCopy(renderer, backgroundTexture, nullptr, nullptr);
+    }
 
-    // Vẽ thức ăn
-    food.render();
+    // Render game objects based on game state
+    if (gameState == GAME_STATE) {
+        // Render game elements
+        snake.render();
+        food.render();
+        renderScore();
+    } else {
+        // Render menu
+        menu.render();
+    }
 
-    // Vẽ rắn
-    snake.render();
-
-    // Vẽ điểm số
-    renderScore();
-
-    // Hiển thị những gì đã vẽ
+    // Update the screen
     SDL_RenderPresent(renderer);
+}
+
+void Game::updateScore() {
+    // Update score texture
+    if (scoreTexture) {
+        SDL_DestroyTexture(scoreTexture);
+        scoreTexture = nullptr;
+    }
+
+    TTF_Font* scoreFont = TTF_OpenFont("assets/font.ttf", 20);
+    if (!scoreFont) {
+        std::cerr << "Không thể tải font điểm số! SDL_ttf Error: " << TTF_GetError() << std::endl;
+        return;
+    }
+
+    std::stringstream scoreText;
+    scoreText << "Score: " << score << "  High Score: " << highScore;
+
+    SDL_Color textColor = {255, 255, 255, 255}; // White
+    SDL_Surface* scoreSurface = TTF_RenderText_Blended(scoreFont, scoreText.str().c_str(), textColor);
+
+    if (!scoreSurface) {
+        std::cerr << "Không thể tạo surface điểm số! SDL_ttf Error: " << TTF_GetError() << std::endl;
+        TTF_CloseFont(scoreFont);
+        return;
+    }
+
+    scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+    scoreRect = {10, 10, scoreSurface->w, scoreSurface->h};
+
+    SDL_FreeSurface(scoreSurface);
+    TTF_CloseFont(scoreFont);
 }
 
 void Game::renderScore() {
@@ -303,25 +348,20 @@ void Game::renderScore() {
     }
 }
 
+void Game::reset() {
+    // Reset game state
+    snake.init(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    food.generate(snake.getSegments());
+    score = 0;
+    gameSpeed = 150; // Reset speed to initial value
+    updateScore();
+    gameState = GAME_STATE;
+}
+
 bool Game::isRunning() const {
     return running;
 }
 
-void Game::run() {
-    while (isRunning()) {
-        handleEvents();
-        update();
-        render();
-
-        // Giới hạn FPS
-        SDL_Delay(16); // Khoảng 60 FPS
-    }
-}
-
-void Game::reset() {
-    snake.init(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+void Game::generateFood() {
     food.generate(snake.getSegments());
-    gameSpeed = 150;
-    score = 0;
-    updateScore();
 }

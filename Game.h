@@ -9,13 +9,13 @@
 
 #include "Snake.h"
 #include "Food.h"
+#include "Menu.h"
 
 class Game {
 private:
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* backgroundTexture;
-
 
     // Am thanh
     Mix_Chunk* eatSound;
@@ -24,8 +24,10 @@ private:
     // Doi tuong game
     Snake snake;
     Food food;
+    Menu menu;
 
-    // TRang tthai game
+    // Trang thai game
+    GameState gameState;
     bool running;
     int score;
     int highScore;
@@ -34,7 +36,7 @@ private:
     int gameSpeed;
     int speedIncrement; // Tăng tốc sau mỗi lần ăn mồi
 
-    // Fonthiển thị điểm số
+    // Font hiển thị điểm số
     SDL_Texture* scoreTexture;
     SDL_Rect scoreRect;
 

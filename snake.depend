@@ -40,3 +40,57 @@
 	<iostream>
 	<SDL_image.h>
 
+1746417924 source:e:\university\2024-2025\hk2\ltnc\btl\gamesdl\main.cpp
+	<SDL.h>
+	"Game.h"
+
+1746426957 e:\university\2024-2025\hk2\ltnc\btl\gamesdl\game.h
+	<SDL.h>
+	<SDL_image.h>
+	<SDL_mixer.h>
+	<vector>
+	<string>
+	"Snake.h"
+	"Food.h"
+	"Menu.h"
+
+1746417923 e:\university\2024-2025\hk2\ltnc\btl\gamesdl\snake.h
+	<SDL.h>
+	<vector>
+
+1746417923 e:\university\2024-2025\hk2\ltnc\btl\gamesdl\food.h
+	<SDL.h>
+	<vector>
+	"Snake.h"
+
+1746417923 source:e:\university\2024-2025\hk2\ltnc\btl\gamesdl\food.cpp
+	"Food.h"
+	<iostream>
+	<cstdlib>
+	<ctime>
+	<SDL_image.h>
+	<SDL.h>
+
+1746426995 e:\university\2024-2025\hk2\ltnc\btl\gamesdl\menu.h
+	<SDL.h>
+	<SDL_ttf.h>
+	<vector>
+	<string>
+
+1746417923 source:e:\university\2024-2025\hk2\ltnc\btl\gamesdl\snake.cpp
+	"Snake.h"
+	<iostream>
+	<SDL_image.h>
+
+1746426418 source:e:\university\2024-2025\hk2\ltnc\btl\gamesdl\menu.cpp
+	"Menu.h"
+	<iostream>
+	<sstream>
+	<SDL_image.h>
+
+1746422131 source:e:\university\2024-2025\hk2\ltnc\btl\gamesdl\game.cpp
+	"Game.h"
+	<iostream>
+	<sstream>
+	<SDL_ttf.h>
+
